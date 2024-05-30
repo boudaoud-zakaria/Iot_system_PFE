@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("SQLDB_URI")
+}
+
+
+// generator erd {
+//   provider = "prisma-erd-generator"
+//   output = "../ERD.png"
+// }
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Major {
+  id           String    @id @default(uuid())
+  name         String
+  abbreviation String
+  modules      Module[]
+  students     Student[] @relation("MajorStudent")
+  schedules    Schedule[] @relation("MajorSchedule")
+  year         Year?     @relation(fields: [yearId], references: [id])
+  yearId       String?   
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Module {
+  id           String    @id @default(uuid())
+  name         String
+  abbreviation String
+  major        Major?    @relation(fields: [majorId], references: [id])
+  majorId      String?  
+  schedules    Schedule[] @relation("ModuleSchedule")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Student {
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String
+  yearOfStudy Year?    @relation(fields: [yearOfStudyId], references: [id])
+  yearOfStudyId String? 
+  major       Major?   @relation("MajorStudent", fields: [majorId], references: [id])
+  majorId     String?  
+  absence Absence[]
+  group       String
+  cardId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Teacher {
+  id        String     @id @default(uuid())
+  firstName String?
+  lastName  String?
+  email     String?
+  phone     String?
+  cardIs    String?
+  schedules Schedule[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Schedule {
+  id         String   @id @default(uuid())
+  day        String
+  classroom  String?
+  year       Year?    @relation(fields: [yearId], references: [id])
+  yearId     String?  
+  major      Major?   @relation("MajorSchedule", fields: [majorId], references: [id])
+  majorId    String?  
+  module     Module?  @relation("ModuleSchedule", fields: [moduleId], references: [id])
+  moduleId   String?  
+  group      String?
+  start      String
+  end        String
+  absence Absence[]
+  teacher    Teacher? @relation(fields: [teacherId], references: [id])
+  teacherId  String   
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+model Year {
+  id        String    @id @default(uuid())
+  name      String
+  majors    Major[]
+  students  Student[]
+  schedules Schedule[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Absence{
+  id        String  @id @default(uuid())
+  student   Student? @relation(fields: [studentId], references: [id])
+  studentId  String
+  schedule  Schedule? @relation(fields: [scheduleId], references: [id])
+  scheduleId String
+}
