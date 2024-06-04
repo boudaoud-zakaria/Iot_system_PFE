@@ -2,11 +2,15 @@ import React, { useEffect, useRef, useState, useTransition } from 'react'
 import { GrValidate } from 'react-icons/gr'
 import listStudent from '../server/listStudent';
 import insert from '../server/insert';
+import { PrismaClient } from "@prisma/client"
 
 type paramType = {
     year : string | null;
     group : string | null;
     status : number;
+    schedule : string | null;
+    yearName : string | null;
+    module : string | null;
 }
 
 type dataListType = {
@@ -14,13 +18,18 @@ type dataListType = {
     firstName: string;
     lastName: string;
     cardId : string | null; 
+    absence: {
+        id: string;
+    }[];
 }
 
-export default function DataList({year, group , status} : paramType) {
+export default function DataList({year, group , status , schedule , yearName , module} : paramType) {
 
     //! --------------{ use Transation }-----------------
     const [transation , startTransation] = useTransition();
     const [registerTransation , startRigisterTransation] = useTransition();
+    const [scheduleTransation , startScheduleTransation] = useTransition()
+    const [fetchTransation , startFetchTransation] = useTransition()
     //! --------------{ use state }-----------------
     const [dataList , setDataList] = useState<dataListType[]>([]);
     const [dataValue, setDataValue] = useState('');
@@ -36,6 +45,26 @@ export default function DataList({year, group , status} : paramType) {
         if (inputReader.current) {
             inputReader.current.focus();
         }
+        // startScheduleTransation(async()=>{
+        //     const prisma = new PrismaClient();
+        //     const data = await prisma.schedule.findMany(
+        //         {
+        //             where :{
+        //                 yearId : year,
+        //                 group : group,
+        //             },
+        //             select :{
+        //                 id : true,
+        //                 firstName : true,
+        //                 lastName : true,
+        //                 cardId : true,
+        //             },
+        //             orderBy: {
+        //                 firstName: "asc", // Order by firstName in ascending order
+        //             },
+        //         }
+        //     );
+        // })
     }, [ year , group , status]);
     
     useEffect(()=>{
@@ -43,7 +72,7 @@ export default function DataList({year, group , status} : paramType) {
             const students = await listStudent((year as string) , (group as string));
             setDataList(students);
             setBtn(1);
-            setStart(" : Start Registerr");
+            setStart(" : Start Register");
         })
     } , [year , group ]);
     //! --------------{ input data }-----------------
@@ -63,7 +92,7 @@ export default function DataList({year, group , status} : paramType) {
             setStart("");
             // console.log(dataList);
             startRigisterTransation(async()=>{
-                const result = await insert(dataList);
+                const result = await insert(dataList , schedule??'');
                 //? **********
                 //* logic 
                 //? **********
@@ -171,8 +200,8 @@ export default function DataList({year, group , status} : paramType) {
                             <tbody className='rounded-xl'>
                             {
                             dataList.map((student) => ( 
-                                <tr key={student.id}
-                                className='text-md '
+                                <tr key={student.id} onClick={()=>document.getElementById(`${student.id}`).showModal()}
+                                className='text-md'
                                 style={{
                                     backgroundColor: student.cardId === 'true' ? '#e6fdd9' :  valiadtionStatus === 1 && student.cardId !== 'true' ? '#ffcbd1' : 'transparent' ,
                                     //backgroundColor: student.id === 'true' ? '#e6fdd9' : student.year === '0' && statusAbsent == 1 ? '#ffcbd1' : 'transparent',
@@ -187,7 +216,21 @@ export default function DataList({year, group , status} : paramType) {
                                         opacity: student.cardId === 'true'? 1 : 0,
                                     }}
                                     /></td>
+                                    <dialog id={student.id} className="modal">
+                                        <div className="modal-box bg-white">
+                                            <form method="dialog">
+                                              {/* if there is a button in form, it will close the modal */}
+                                                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                                            </form>
+                                            <h3 className="font-bold text-lg">{student.firstName} {student.lastName}</h3>
+                                            <br />
+                                            <p className='py-4 text-green-900'>
+                                                Number of absences for this student is {student.absence.length}
+                                            </p>
+                                        </div>
+                                    </dialog>
                                 </tr>
+                                
                                 ))}
                             </tbody>
                     </table>

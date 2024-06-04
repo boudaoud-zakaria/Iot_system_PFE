@@ -197,7 +197,7 @@ export default function FullPage({param} : any) {
                 </div>
                 {/* <div className='bg-blue-200 mt-5 h-8 flex items-center justify-center rounded-lg shadow-sm absolute bottom-8 w-[30%] text-gray-800'>data</div> */}
             </div>
-            <DataList year={year?? "null"} group={group} status={status} />
+            <DataList year={year?? "null"} group={group} status={status} schedule={dataTimeResult[0].id} yearName = {dataTimeResult[0].year?.name?? "No Year"} module={dataTimeResult[0].module?.abbreviation?? "No Module"} />
         </div>
     )
 }

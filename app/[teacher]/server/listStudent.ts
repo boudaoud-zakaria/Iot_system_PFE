@@ -16,11 +16,14 @@ export default async function listStudent(year : String , group : String) {
                 firstName : true,
                 lastName : true,
                 cardId : true,
+                absence: { select: {id : true} },
             },
             orderBy: {
                 firstName: "asc", // Order by firstName in ascending order
             },
         }
     );
+    console.log(data[3]);
+    
     return data;
 }
