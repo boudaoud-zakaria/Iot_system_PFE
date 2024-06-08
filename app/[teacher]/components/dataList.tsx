@@ -200,7 +200,8 @@ export default function DataList({year, group , status , schedule , yearName , m
                             <tbody className='rounded-xl'>
                             {
                             dataList.map((student) => ( 
-                                <tr key={student.id} onClick={()=>document.getElementById(`${student.id}`).showModal()}
+                                // <tr key={student.id} onClick={()=>document.getElementById(`${student.id}`).showModal()}
+                                <tr key={student.id} 
                                 className='text-md'
                                 style={{
                                     backgroundColor: student.cardId === 'true' ? '#e6fdd9' :  valiadtionStatus === 1 && student.cardId !== 'true' ? '#ffcbd1' : 'transparent' ,
